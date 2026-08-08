@@ -14,7 +14,7 @@ set -euo pipefail
 # --- Rutas ---
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 WORKDIR="$SCRIPTDIR/work"
-REPODIR="$SCRIPTDIR/repo"
+REPODIR="$SCRIPTDIR/docs"
 ROOTFS="$WORKDIR/rootfs"
 CURRENT_FILE="$SCRIPTDIR/current"
 API_URL="https://launcher.hytale.com/version/release/launcher.json"
