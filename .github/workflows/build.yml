@@ -28,12 +28,14 @@ jobs:
           chmod +x build.sh
           export XBPS_CREATE=/usr/bin/xbps-create
           export XBPS_RINDEX=/usr/bin/xbps-rindex
+          # Borrar current para forzar rebuild en CI
+          rm -f current
           ./build.sh
 
-      - name: Check if new version was built
+      - name: Check if package was built
         id: check
         run: |
-          if [ -f repo/x86_64-repodata ]; then
+          if ls repo/*.xbps 1>/dev/null 2>&1; then
             echo "built=true" >> $GITHUB_OUTPUT
             PKG=$(ls repo/*.xbps 2>/dev/null | head -1)
             echo "pkg=$PKG" >> $GITHUB_OUTPUT
@@ -60,7 +62,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add repo/
+          git add repo/ current
           git commit -m "Update repo: ${{ steps.check.outputs.pkgname }}"
           git push
 
