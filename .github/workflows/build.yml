@@ -1,0 +1,73 @@
+name: Build and Release
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # Cada 6 horas
+  workflow_dispatch:         # Permite lanzarlo manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/void-linux/void-glibc-full:latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          xbps-install -Suy xbps xbps-digest jq curl unzip
+          xbps-install -y bash coreutils
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build package
+        run: |
+          chmod +x build.sh
+          export XBPS_CREATE=/usr/bin/xbps-create
+          export XBPS_RINDEX=/usr/bin/xbps-rindex
+          ./build.sh
+
+      - name: Check if new version was built
+        id: check
+        run: |
+          if [ -f repo/x86_64-repodata ]; then
+            echo "built=true" >> $GITHUB_OUTPUT
+            PKG=$(ls repo/*.xbps 2>/dev/null | head -1)
+            echo "pkg=$PKG" >> $GITHUB_OUTPUT
+            echo "pkgname=$(basename $PKG)" >> $GITHUB_OUTPUT
+          else
+            echo "built=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload artifact
+        if: steps.check.outputs.built == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.check.outputs.pkgname }}
+          path: ${{ steps.check.outputs.pkgname }}
+
+      - name: Update repo index
+        if: steps.check.outputs.built == 'true'
+        run: |
+          cd repo
+          xbps-rindex -a *.xbps
+
+      - name: Commit repo index
+        if: steps.check.outputs.built == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add repo/
+          git commit -m "Update repo: ${{ steps.check.outputs.pkgname }}"
+          git push
+
+      - name: Create Release
+        if: steps.check.outputs.built == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check.outputs.pkgname }}
+          files: ${{ steps.check.outputs.pkgname }}
+          generate_release_notes: true

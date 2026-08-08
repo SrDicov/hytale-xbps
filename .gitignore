@@ -1,0 +1,5 @@
+work/
+*.xbps
+repo/*.xbps
+repo/x86_64-repodata
+.DS_Store
