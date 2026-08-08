@@ -17,8 +17,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          xbps-install -Suy xbps xbps-digest jq curl unzip
-          xbps-install -y bash coreutils
+          xbps-install -Suy xbps jq curl unzip coreutils bash
+          xbps-install -y openssl
 
       - name: Checkout
         uses: actions/checkout@v4
