@@ -22,13 +22,14 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Build package
         run: |
           chmod +x build.sh
           export XBPS_CREATE=/usr/bin/xbps-create
           export XBPS_RINDEX=/usr/bin/xbps-rindex
-          # Borrar current para forzar rebuild en CI
           rm -f current
           ./build.sh
 
@@ -57,14 +58,12 @@ jobs:
           cd repo
           xbps-rindex -a *.xbps
 
-      - name: Commit repo index
+      - name: Commit and push repo index
         if: steps.check.outputs.built == 'true'
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add repo/ current
-          git commit -m "Update repo: ${{ steps.check.outputs.pkgname }}"
-          git push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update repo: ${{ steps.check.outputs.pkgname }}"
+          file_pattern: 'repo/* current'
 
       - name: Create Release
         if: steps.check.outputs.built == 'true'
