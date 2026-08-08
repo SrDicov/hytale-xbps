@@ -11,28 +11,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/void-linux/void-glibc-full:latest
 
     steps:
-      - name: Install dependencies
-        run: |
-          xbps-install -Suy xbps jq curl unzip coreutils bash
-          xbps-install -y openssl git
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build package
-        run: |
-          chmod +x build.sh
-          export XBPS_CREATE=/usr/bin/xbps-create
-          export XBPS_RINDEX=/usr/bin/xbps-rindex
-          rm -f current
-          ./build.sh
+      - name: Build in Void Linux container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/void-linux/void-glibc-full:latest
+          options: -v ${{ github.workspace }}:/workspace -w /workspace
+          run: |
+            xbps-install -Suy xbps jq curl unzip coreutils bash openssl 2>&1 | tail -3
+            chmod +x build.sh
+            XBPS_CREATE=/usr/bin/xbps-create XBPS_RINDEX=/usr/bin/xbps-rindex ./build.sh
 
       - name: Check if package was built
         id: check
@@ -46,19 +41,15 @@ jobs:
             echo "built=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload artifact
-        if: steps.check.outputs.built == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.check.outputs.pkgname }}
-          path: repo/${{ steps.check.outputs.pkgname }}
-
       - name: Update repo index
         if: steps.check.outputs.built == 'true'
         run: |
           cd repo
           xbps-rindex -a *.xbps
-          cd ..
+
+      - name: Commit and push repo index
+        if: steps.check.outputs.built == 'true'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add repo/ current
@@ -70,5 +61,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.check.outputs.pkgname }}
-          files: repo/${{ steps.check.outputs.pkgname }}
+          files: ${{ steps.check.outputs.pkgname }}
           generate_release_notes: true
