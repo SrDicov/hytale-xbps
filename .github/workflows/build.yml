@@ -25,14 +25,14 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             ghcr.io/void-linux/void-glibc-full:latest \
-            bash -c '
+            /usr/bin/sh -c '
               xbps-install -Suy xbps jq curl unzip coreutils bash openssl 2>&1 | tail -1
-              chmod +x build.sh
-              export XBPS_CREATE=/usr/bin/xbps-create
-              export XBPS_RINDEX=/usr/bin/xbps-rindex
-              ./build.sh
+              /usr/local/bin/bash ./build.sh
               cd repo && xbps-rindex -a *.xbps && cd ..
             '
+
+      - name: Fix permissions
+        run: sudo chown -R $(id -u):$(id -g) repo/ current 2>/dev/null || true
 
       - name: Check if package was built
         id: check
