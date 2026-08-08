@@ -36,7 +36,8 @@ done
 
 # --- Limpiar trabajo anterior ---
 rm -rf "$ROOTFS"
-mkdir -p "$ROOTFS/opt/hytale-launcher" \
+mkdir -p "$REPODIR" \
+         "$ROOTFS/opt/hytale-launcher" \
          "$ROOTFS/usr/bin" \
          "$ROOTFS/usr/share/applications"
 
