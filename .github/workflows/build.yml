@@ -27,7 +27,7 @@ jobs:
             ghcr.io/void-linux/void-glibc-full:latest \
             /usr/bin/sh -c '
               xbps-install -Suy xbps jq curl unzip coreutils bash openssl 2>&1 | tail -1
-              /usr/local/bin/bash ./build.sh
+              /usr/bin/bash ./build.sh
               cd repo && xbps-rindex -a *.xbps && cd ..
             '
 
