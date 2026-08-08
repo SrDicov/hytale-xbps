@@ -64,5 +64,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.check.outputs.pkgname }}
-          files: ${{ steps.check.outputs.pkgname }}
+          files: repo/${{ steps.check.outputs.pkgname }}
           generate_release_notes: true
