@@ -19,15 +19,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build in Void Linux container
+      - name: Build and index in Void Linux container
         uses: addnab/docker-run-action@v3
         with:
           image: ghcr.io/void-linux/void-glibc-full:latest
           options: -v ${{ github.workspace }}:/workspace -w /workspace
           run: |
-            xbps-install -Suy xbps jq curl unzip coreutils bash openssl 2>&1 | tail -3
+            xbps-install -Suy xbps jq curl unzip coreutils bash openssl 2>&1 | tail -1
             chmod +x build.sh
             XBPS_CREATE=/usr/bin/xbps-create XBPS_RINDEX=/usr/bin/xbps-rindex ./build.sh
+            cd repo && xbps-rindex -a *.xbps && cd ..
 
       - name: Check if package was built
         id: check
@@ -40,12 +41,6 @@ jobs:
           else
             echo "built=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Update repo index
-        if: steps.check.outputs.built == 'true'
-        run: |
-          cd repo
-          xbps-rindex -a *.xbps
 
       - name: Commit and push repo index
         if: steps.check.outputs.built == 'true'
