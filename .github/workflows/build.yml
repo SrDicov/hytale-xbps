@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # Cada 6 horas
+    - cron: '0 0 * * *'     # Cada 24 horas (medianoche UTC)
   workflow_dispatch:         # Permite lanzarlo manualmente
 
 permissions:
