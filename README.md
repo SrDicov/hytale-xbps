@@ -62,5 +62,5 @@ compila automáticamente el paquete y publica un nuevo Release.
 
 El código de este proyecto está licenciado bajo [GNU GPL v3.0](LICENSE).
 
-El binario del Hytale Launcher es propiedad de Hypixel Studios / Riot Games.
+El binario del Hytale Launcher es propiedad de Hypixel Studios.
 Este proyecto no está afiliado ni respaldado por ellos.
